@@ -125,3 +125,10 @@ function GenerateQuadsBalls(atlas)
 
     return quads
 end
+
+function GeneratePowerups(atlas)
+    local x = 0
+    local y = 192
+
+    local counter = 1
+    local quads = {}

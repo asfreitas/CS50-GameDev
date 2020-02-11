@@ -28,9 +28,9 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     self.ball = params.ball
     self.level = params.level
-
+    self.powerup = Powerup()
     self.recoverPoints = 5000
-
+    
     -- give ball random starting velocity
     self.ball.dx = math.random(-200, 200)
     self.ball.dy = math.random(-50, -60)
@@ -49,10 +49,12 @@ function PlayState:update(dt)
         gSounds['pause']:play()
         return
     end
+    
 
     -- update positions based on velocity
     self.paddle:update(dt)
     self.ball:update(dt)
+    self.powerup:update(dt)
 
     if self.ball:collides(self.paddle) then
         -- raise ball above paddle in case it goes below it, then reverse dy
@@ -210,6 +212,7 @@ function PlayState:render()
 
     self.paddle:render()
     self.ball:render()
+    self.powerup:render()
 
     renderScore(self.score)
     renderHealth(self.health)

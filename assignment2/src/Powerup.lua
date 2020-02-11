@@ -14,16 +14,23 @@ function Powerup:init()
     self.height = 16
     self.size = 2
     self.dy = 0
-
+    self.sway = 1
+    self.time = 0
 end
 
 function Powerup:update(dt)
-    
-    self.y = self.y + PADDLE_SPEED * dt
+    self.time = self.time + dt
+    self.y = self.y + POWERUP_SPEED * dt
+    self.x = self.x + (15 * self.sway) * dt
+    if self.time > 1 then
+        self.sway = self.sway * -1
+        self.time = 0
+    end
+
 
 end
 
 function Powerup:render()
-    love.graphics.draw(gTextures['main'], gFrames['paddles'][self.size + 4 * (1)],
+    love.graphics.draw(gTextures['main'], gFrames['powerups'][1],
     self.x, self.y)
 end

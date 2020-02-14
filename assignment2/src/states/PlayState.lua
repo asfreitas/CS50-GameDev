@@ -23,7 +23,8 @@ PlayState = Class{__includes = BaseState}
 function PlayState:init()
     self.Balls = {}
     self.powerup = Powerup()
-
+    self.powerupCaught = false
+    self.powerupTimer = 0
 end
 function PlayState:enter(params)
     self.paddle = params.paddle
@@ -54,7 +55,29 @@ function PlayState:update(dt)
         gSounds['pause']:play()
         return
     end
-    
+    self:updateBalls(dt)
+ 
+    self.paddle:update(dt)
+    self.powerupTimer = self.powerupTimer + dt
+    if self.powerupCaught == false and self.powerupTimer > 12 then
+        self.powerup:update(dt)
+    end
+
+    if self.powerup:collides(self.paddle) then
+        self:addBalls(2)
+    end
+        
+    -- for rendering particle systems
+    for k, brick in pairs(self.bricks) do
+        brick:update(dt)
+    end
+
+    if love.keyboard.wasPressed('escape') then
+        love.event.quit()
+    end
+end
+function PlayState:updateBalls(dt)
+   
     for x = 1 , #self.Balls do
         if self.Balls[x]:collides(self.paddle) then
             -- raise ball above paddle in case it goes below it, then reverse dy
@@ -191,34 +214,15 @@ function PlayState:update(dt)
         self.Balls[x]:update(dt)
 
     end
-    self.paddle:update(dt)
-    self.powerup:update(dt)
-
-    if self.powerup:collides(self.paddle) then
-        addBalls(2, self.Balls)
-    end
-        
-    -- for rendering particle systems
-    for k, brick in pairs(self.bricks) do
-        brick:update(dt)
-    end
-
-    if love.keyboard.wasPressed('escape') then
-        love.event.quit()
-    end
 end
-function PlayState:updateBalls(dt)
-
-end
-function addBalls(amount, balls)
-    for i = #balls+1, amount+1 do
-
-        balls[i] = Ball()
-        balls[i].dx = math.random(-200, 200)
-        balls[i].dy = math.random(-50, -60)
-        balls[i].x = balls[1].x
-        balls[i].y = balls[1].y
-        balls[i].skin = math.random(7)
+function PlayState:addBalls(amount)
+    for i = #self.Balls+1, amount+1 do
+        self.Balls[i] = Ball()
+        self.Balls[i].dx = math.random(-200, 200)
+        self.Balls[i].dy = math.random(-50, -60)
+        self.Balls[i].x = self.Balls[1].x
+        self.Balls[i].y = self.Balls[1].y
+        self.Balls[i].skin = math.random(7)
     end
 end
 
@@ -237,7 +241,9 @@ function PlayState:render()
     for z = 1 , #self.Balls do
         self.Balls[z]:render()
     end
-    self.powerup:render()
+    if self.powerupCaught == false and self.powerupTimer > 12 then
+        self.powerup:render()
+    end
 
     renderScore(self.score)
     renderHealth(self.health)

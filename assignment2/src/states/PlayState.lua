@@ -25,6 +25,8 @@ function PlayState:init()
     self.powerup = Powerup()
     self.powerupCaught = false
     self.powerupTimer = 0
+    self.recoverPoints = 5000
+
 end
 function PlayState:enter(params)
     self.paddle = params.paddle
@@ -35,7 +37,6 @@ function PlayState:enter(params)
     self.Balls[1] = params.ball
     self.ball = params.ball
     self.level = params.level
-    self.recoverPoints = 5000
     
     -- give ball random starting velocity
     self.Balls[1].dx = math.random(-200, 200)
@@ -43,16 +44,8 @@ function PlayState:enter(params)
 end
 
 function PlayState:update(dt)
-    if self.paused then
-        if love.keyboard.wasPressed('space') then
-            self.paused = false
-            gSounds['pause']:play()
-        else
-            return
-        end
-    elseif love.keyboard.wasPressed('space') then
-        self.paused = true
-        gSounds['pause']:play()
+
+    if self:checkPaused() == true then
         return
     end
     self:updateBalls(dt)
@@ -74,6 +67,23 @@ function PlayState:update(dt)
 
     if love.keyboard.wasPressed('escape') then
         love.event.quit()
+    end
+    
+end
+
+function PlayState:checkPaused()
+    if self.paused then
+        if love.keyboard.wasPressed('space') then
+            self.paused = false
+            gSounds['pause']:play()
+            return false
+        else
+            return true
+        end
+    elseif love.keyboard.wasPressed('space') then
+        self.paused = true
+        gSounds['pause']:play()
+        return true
     end
 end
 function PlayState:updateBalls(dt)
@@ -116,7 +126,8 @@ function PlayState:updateBalls(dt)
                 if self.score > self.recoverPoints then
                     -- can't go above 3 health
                     self.health = math.min(3, self.health + 1)
-
+                    self.paddle.size = self.health + 1
+                    self.paddle.width = self.paddle.size * 32
                     -- multiply recover points by 2
                     self.recoverPoints = math.min(100000, self.recoverPoints * 2)
 

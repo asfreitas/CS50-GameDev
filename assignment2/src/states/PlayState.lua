@@ -20,17 +20,20 @@ PlayState = Class{__includes = BaseState}
     We initialize what's in our PlayState via a state table that we pass between
     states as we go from playing to serving.
 ]]
+function PlayState:init()
+    self.Balls = {}
+    self.powerup = Powerup()
+
+end
 function PlayState:enter(params)
     self.paddle = params.paddle
     self.bricks = params.bricks
     self.health = params.health
     self.score = params.score
     self.highScores = params.highScores
-    self.Balls = {}
     self.Balls[1] = params.ball
     self.ball = params.ball
     self.level = params.level
-    self.powerup = Powerup()
     self.recoverPoints = 5000
     
     -- give ball random starting velocity
@@ -192,12 +195,7 @@ function PlayState:update(dt)
     self.powerup:update(dt)
 
     if self.powerup:collides(self.paddle) then
-        self.Balls[2] = Ball()
-        self.Balls[2].dx = math.random(-200, 200)
-        self.Balls[2].dy = math.random(-50, -60)
-        self.Balls[2].x = self.Balls[1].x
-        self.Balls[2].y = self.Balls[1].y
-        self.Balls[2].skin = math.random(7)
+        addBalls(2, self.Balls)
     end
         
     -- for rendering particle systems
@@ -212,6 +210,18 @@ end
 function PlayState:updateBalls(dt)
 
 end
+function addBalls(amount, balls)
+    for i = #balls+1, amount+1 do
+
+        balls[i] = Ball()
+        balls[i].dx = math.random(-200, 200)
+        balls[i].dy = math.random(-50, -60)
+        balls[i].x = balls[1].x
+        balls[i].y = balls[1].y
+        balls[i].skin = math.random(7)
+    end
+end
+
 function PlayState:render()
     -- render bricks
     for k, brick in pairs(self.bricks) do

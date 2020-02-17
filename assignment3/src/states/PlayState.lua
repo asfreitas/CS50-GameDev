@@ -19,7 +19,8 @@
 PlayState = Class{__includes = BaseState}
 
 function PlayState:init()
-    
+
+    self.mouseWait = 0
     -- start our transition alpha at full, so we fade in
     self.transitionAlpha = 255
 
@@ -55,6 +56,7 @@ function PlayState:init()
     end)
 end
 
+
 function PlayState:enter(params)
     
     -- grab level # from the params we're passed
@@ -68,6 +70,7 @@ function PlayState:enter(params)
 
     -- score we have to reach to get to the next level
     self.scoreGoal = self.level * 1.25 * 1000
+
 end
 
 function PlayState:update(dt)
@@ -87,7 +90,8 @@ function PlayState:update(dt)
             score = self.score
         })
     end
-
+    -- Wait to make sure we aren't getting multiple mouse inputs
+    self.mouseWait = self.mouseWait + dt
     -- go to next level if we surpass score goal
     if self.score >= self.scoreGoal then
         
@@ -120,10 +124,23 @@ function PlayState:update(dt)
             self.boardHighlightX = math.min(7, self.boardHighlightX + 1)
             gSounds['select']:play()
         end
-
+        -- If the user has a mouse they can get click to move blocks
+        local x, y = love.mouse.getPosition()
+        local mouseX, mouseY = push:toGame(x, y)
+        if mouseX and mouseY then
+            boardHighlightX = math.floor((mouseX - 240) / 32)
+            if boardHighlightX >= 0 and boardHighlightX < 8 then 
+                self.boardHighlightX = boardHighlightX
+            end
+            boardHighlightY = math.floor((mouseY - 16) / 32)
+            if boardHighlightY >= 0 and boardHighlightY < 8 then
+                self.boardHighlightY = boardHighlightY
+            end
+        end
         -- if we've pressed enter, to select or deselect a tile...
-        if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
-            
+        if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or (love.mouse.isDown(1) and self.mouseWait > 0.25) then
+            --reset the counter
+            self.mouseWait = 0
             -- if same tile as currently highlighted, deselect
             local x = self.boardHighlightX + 1
             local y = self.boardHighlightY + 1
@@ -173,7 +190,6 @@ function PlayState:update(dt)
             end
         end
     end
-
     Timer.update(dt)
 end
 

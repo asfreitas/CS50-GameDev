@@ -111,20 +111,7 @@ function PlayState:update(dt)
 
     if self.canInput then
         -- move cursor around based on bounds of grid, playing sounds
-        if love.keyboard.wasPressed('up') then
-            self.boardHighlightY = math.max(0, self.boardHighlightY - 1)
-            gSounds['select']:play()
-        elseif love.keyboard.wasPressed('down') then
-            self.boardHighlightY = math.min(7, self.boardHighlightY + 1)
-            gSounds['select']:play()
-        elseif love.keyboard.wasPressed('left') then
-            self.boardHighlightX = math.max(0, self.boardHighlightX - 1)
-            gSounds['select']:play()
-        elseif love.keyboard.wasPressed('right') then
-            self.boardHighlightX = math.min(7, self.boardHighlightX + 1)
-            gSounds['select']:play()
-        end
-        -- If the user has a mouse they can get click to move blocks
+                -- If the user has a mouse they can get click to move blocks
         local x, y = love.mouse.getPosition()
         local mouseX, mouseY = push:toGame(x, y)
         if mouseX and mouseY then
@@ -137,8 +124,10 @@ function PlayState:update(dt)
                 self.boardHighlightY = boardHighlightY
             end
         end
+
         -- if we've pressed enter, to select or deselect a tile...
-        if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or (love.mouse.isDown(1) and self.mouseWait > 0.25) then
+        if  love.mouse.isDown(1) and self.mouseWait > 0.25 then
+            gSounds['select']:play()
             --reset the counter
             self.mouseWait = 0
             -- if same tile as currently highlighted, deselect
@@ -212,6 +201,7 @@ function PlayState:calculateMatches()
         -- add score for each match
         for k, match in pairs(matches) do
             self.score = self.score + #match * 50
+            self.timer = self.timer + #match
         end
 
         -- remove any tiles that matched from the board, making empty spaces

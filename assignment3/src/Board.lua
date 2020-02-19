@@ -32,7 +32,7 @@ function Board:initializeTiles()
         for tileX = 1, 8 do
             
             -- create a new tile at X,Y with a random color and variety
-            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.min(self.level, 6)))
+            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(2, 18), math.min(self.level, 6)))
         end
     end
 
@@ -51,7 +51,7 @@ end
 ]]
 function Board:calculateMatches()
     local matches = {}
-
+    local shiny = false
     -- how many of the same color blocks in a row we've found
     local matchNum = 1
 
@@ -75,16 +75,23 @@ function Board:calculateMatches()
                 -- if we have a match of 3 or more up to now, add it to our matches table
                 if matchNum >= 3 then
                     local match = {}
-
+                    
                     -- go backwards from here by matchNum
                     for x2 = x - 1, x - matchNum, -1 do
-                        
+                        if self.tiles[y][x2].shiny == true then
+                            shiny = true
+                        end
                         -- add each tile to the match that's in that match
                         table.insert(match, self.tiles[y][x2])
                     end
-
+                    if shiny == true then
+                        match = self:getRow(y)
+                        table.insert(matches, match)
+                        shiny = false
+                    else
                     -- add this match to our total matches table
-                    table.insert(matches, match)
+                        table.insert(matches, match)
+                    end
                 end
 
                 matchNum = 1
@@ -102,10 +109,18 @@ function Board:calculateMatches()
             
             -- go backwards from end of last row by matchNum
             for x = 8, 8 - matchNum + 1, -1 do
+                if self.tiles[y][x].shiny == true then
+                    shiny = true
+                end
                 table.insert(match, self.tiles[y][x])
             end
-
-            table.insert(matches, match)
+            if shiny == true then 
+                match = self:getRow(y)
+                table.insert(matches,match)
+                shiny = false
+            else
+                table.insert(matches, match)
+            end
         end
     end
 
@@ -124,12 +139,20 @@ function Board:calculateMatches()
 
                 if matchNum >= 3 then
                     local match = {}
-
+                    
                     for y2 = y - 1, y - matchNum, -1 do
+                        if self.tiles[y2][x].shiny == true then
+                            shiny = true
+                        end
                         table.insert(match, self.tiles[y2][x])
                     end
-
-                    table.insert(matches, match)
+                    if shiny == true then
+                        match = self:getColumn(x)
+                        table.insert(matches, match)
+                        shiny = false
+                    else
+                        table.insert(matches, match)
+                    end
                 end
 
                 matchNum = 1
@@ -147,10 +170,18 @@ function Board:calculateMatches()
             
             -- go backwards from end of last row by matchNum
             for y = 8, 8 - matchNum + 1, -1 do
+                if self.tiles[y][x].shiny == true then
+                    shiny = true
+                end
                 table.insert(match, self.tiles[y][x])
             end
-
-            table.insert(matches, match)
+            if shiny == true then
+                match = self:getColumn(x)
+                table.insert(matches, match)
+                shiny = false
+            else
+                table.insert(matches, match)
+            end
         end
     end
 
@@ -174,6 +205,27 @@ function Board:removeMatches()
 
     self.matches = nil
 end
+
+--[[
+    Shifts down all of the tiles that now have spaces below them, then returns a table that
+    contains tweening information for these new tiles.
+]]
+function Board:getRow(position)
+    matches = {}
+    for y = 1, 8  do
+        table.insert(matches, self.tiles[position][y])
+    end
+    return matches
+end
+
+function Board:getColumn(position)
+    matches = {}
+    for x = 1, 8 do
+        table.insert(matches, self.tiles[x][position])
+    end
+    return matches
+end
+
 
 --[[
     Shifts down all of the tiles that now have spaces below them, then returns a table that
@@ -259,12 +311,11 @@ function Board:render()
     for y = 1, #self.tiles do
         for x = 1, #self.tiles[1] do
             self.tiles[y][x]:render(self.x, self.y)
-
         end
     end
     for y = 1, #self.tiles do
         for x = 1, #self.tiles[1] do
-            if self.tiles[y][x].shiny == 2 then
+            if self.tiles[y][x].shiny == true then
                 love.graphics.rectangle('line', (x - 1) * 32 + (VIRTUAL_WIDTH - 272),
                     (y - 1) * 32 + 16, 30, 30, 4)
             end

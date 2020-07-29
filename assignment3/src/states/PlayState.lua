@@ -124,7 +124,7 @@ function PlayState:update(dt)
                 self.boardHighlightY = boardHighlightY
             end
         end
-
+        
         -- if we've pressed enter, to select or deselect a tile...
         if  love.mouse.isDown(1) and self.mouseWait > 0.25 then
             gSounds['select']:play()
@@ -171,11 +171,18 @@ function PlayState:update(dt)
                     [self.highlightedTile] = {x = newTile.x, y = newTile.y},
                     [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
                 })
-                
+                if self.board:calculateMatches() == false then
+                    Timer.tween(0.1, {
+                        [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y},
+                        [self.highlightedTile] = {x = newTile.x, y = newTile.y}
+                    })
+                    Timer.update(dt)
+                    gSounds['error']:play()
+                    return
+                end
                 -- once the swap is finished, we can tween falling blocks as needed
-                :finish(function()
                     self:calculateMatches()
-                end)
+                
             end
         end
     end
@@ -195,6 +202,10 @@ function PlayState:calculateMatches()
     local matches = self.board:calculateMatches()
     
     if matches then
+        
+        print(matches[1][1].color)
+        print(matches[1][2].color)
+        print(matches[1][3].color)
         gSounds['match']:stop()
         gSounds['match']:play()
 

@@ -69,7 +69,8 @@ function StartState:update(dt)
     if love.keyboard.wasPressed('escape') then
         love.event.quit()
     end
-
+    gSounds['music']:setVolume(0.9)
+    gSounds['music']:play()
     -- as long as can still input, i.e., we're not in a transition...
     if not self.pauseInput then
         
